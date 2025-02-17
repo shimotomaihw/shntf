@@ -34,6 +34,13 @@ def main():
     plt.show()
     return
 
+def loglikelihood(m, r1, r2, r3):
+    r123 = numpy.einsum('il,jl,kl->ijk', r1, r2, r3)
+    return numpy.sum(m*numpy.log(r123)-r123)
+
+def aic(m, r1, r2, r3):
+    return -2*loglikelihood(m, r1, r2, r3)+2*(r1.size+r2.size+r3.size)
+
 def ntf3(m, n, iter=32):
     r1 = numpy.zeros((m.shape[0],n))
     r2 = numpy.zeros((m.shape[1],n))
