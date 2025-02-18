@@ -1,13 +1,16 @@
 
 import numpy
-
+import scipy
 import matplotlib.pyplot as plt
 
 def main():
     n = 3
-    uo = numpy.random.randint(0, 10, 3*n).reshape(3, n)
-    vo = numpy.random.randint(0, 10, 11*n).reshape(11, n)
-    wo = numpy.random.randint(0, 10, 101*n).reshape(101, n)
+    ai = 3
+    bi = 13
+    ci = 103
+    uo = numpy.random.randint(0, 10, ai*n).reshape(ai, n)
+    vo = numpy.random.randint(0, 10, bi*n).reshape(bi, n)
+    wo = numpy.random.randint(0, 10, ci*n).reshape(ci, n)
     print(uo)
     print(vo)
     print(wo)
@@ -19,6 +22,9 @@ def main():
     print('r1\n',r1)
     print('r2\n',r2)
     print('r3\n',r3)
+    #print('loglikelihood', loglikelihood(uovowo, r1, r2, r3))
+    print('loglikelihoodGamma', loglikelihoodGamma(uovowo, r1, r2, r3))
+    print('aic', aic(uovowo, r1, r2, r3))
     plt.figure()
     plt.plot(uo)
     plt.figure()
@@ -32,11 +38,29 @@ def main():
     plt.plot(r3)
     plt.title('r3')
     plt.show()
+
     return
 
 def loglikelihood(m, r1, r2, r3):
     r123 = numpy.einsum('il,jl,kl->ijk', r1, r2, r3)
     return numpy.sum(m*numpy.log(r123)-r123)
+
+def loglikelihoodGamma(m, r1, r2, r3):
+    """ Gamma Distribution Log Likelihood
+    m: numpy.ndarray
+    r1: numpy.ndarray
+    r2: numpy.ndarray
+    r3: numpy.ndarray
+    """
+    r123 = numpy.einsum('il,jl,kl->ijk', r1, r2, r3)
+    #lp = numpy.sum(numpy.log(r123)*m-(r123))
+    k = 5
+    mask = (m!=0) * (r123!=0)
+    m0 = m[mask]
+    r0 = r123[mask]
+    lp = numpy.sum((k-1)*numpy.log(m0)-m0/r0 - numpy.log(scipy.special.gamma(m0)) - k*numpy.log(r0))
+    return lp
+
 
 def aic(m, r1, r2, r3):
     return -2*loglikelihood(m, r1, r2, r3)+2*(r1.size+r2.size+r3.size)
